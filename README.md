@@ -12,4 +12,12 @@ cargo install tldr-line-verifier
 
 ```
 tldr-line-verifier ./ --max_lines=1000 --exclude_pattern=".csv$"
+
+```
+
+
+# Docker
+
+```
+docker run -v /path/to/repository:/home nicekloki/tldr-line-verifier
 ```

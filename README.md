@@ -1,4 +1,4 @@
-# tldr-line-verifier
+# 👮 tldr-line-verifier
 
 Command line tool to verify the max length of files in a repository. Supposed to be run in CI.
 

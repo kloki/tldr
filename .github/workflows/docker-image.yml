@@ -15,8 +15,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: docker/login-action@v2
-        with:
+      with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      run: docker build . --file Dockerfile --tag nicekloki/tldr-line-verifier
-      run: docker push nicekloki/tldr-line-verifier
+    - run: docker build . --file Dockerfile --tag nicekloki/tldr-line-verifier
+    - run: docker push nicekloki/tldr-line-verifier

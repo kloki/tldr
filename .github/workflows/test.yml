@@ -1,7 +1,9 @@
-name: test
+name: Test
 
 env:
   CARGO_TERM_COLOR: always
+
+on: pull-request
 
 jobs:
   test:

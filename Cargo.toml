@@ -11,3 +11,6 @@ license = "MIT OR Apache-2.0"
 clap = { version = "4.1.8", features = ["derive", "env"] }
 regex = "1.8.1"
 walkdir = "2.3.3"
+
+[dev-dependencies]
+tempdir = "0.3.7"

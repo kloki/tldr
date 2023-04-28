@@ -89,3 +89,96 @@ fn main() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+    use std::io::Write;
+    use tempdir::TempDir; // crate for test-only use. Cannot be used in non-test code.
+
+    #[test]
+    fn test_success() {
+        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let file_path_1 = tmp_dir.path().join("python.py");
+        let mut tmp_file_1 = File::create(file_path_1).unwrap();
+        writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
+        let failing_files = check_files(Args {
+            paths: vec![PathBuf::from(tmp_dir.path())],
+            include_pattern: "".to_string(),
+            exclude_pattern: "".to_string(),
+            max_lines: 4,
+        })
+        .unwrap();
+        assert!(failing_files.len() == 0)
+    }
+
+    #[test]
+    fn test_to_long() {
+        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let file_path_1 = tmp_dir.path().join("python.py");
+        let mut tmp_file_1 = File::create(file_path_1).unwrap();
+        writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
+        let failing_files = check_files(Args {
+            paths: vec![PathBuf::from(tmp_dir.path())],
+            include_pattern: "".to_string(),
+            exclude_pattern: "".to_string(),
+            max_lines: 1,
+        })
+        .unwrap();
+        assert!(failing_files.len() == 1)
+    }
+    #[test]
+    fn test_include_pattern() {
+        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let file_path_1 = tmp_dir.path().join("python.py");
+        let mut tmp_file_1 = File::create(file_path_1).unwrap();
+        writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
+        let file_path_2 = tmp_dir.path().join("test.txt");
+        let mut tmp_file_2 = File::create(file_path_2).unwrap();
+        writeln!(tmp_file_2, "1\n2\n3\n").unwrap();
+        let failing_files = check_files(Args {
+            paths: vec![PathBuf::from(tmp_dir.path())],
+            include_pattern: "py$".to_string(),
+            exclude_pattern: "".to_string(),
+            max_lines: 1,
+        })
+        .unwrap();
+        assert!(failing_files.len() == 1)
+    }
+    #[test]
+    fn test_exclude_pattern() {
+        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let file_path_1 = tmp_dir.path().join("python.py");
+        let mut tmp_file_1 = File::create(file_path_1).unwrap();
+        writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
+        let file_path_2 = tmp_dir.path().join("test.txt");
+        let mut tmp_file_2 = File::create(file_path_2).unwrap();
+        writeln!(tmp_file_2, "1\n2\n3\n").unwrap();
+        let failing_files = check_files(Args {
+            paths: vec![PathBuf::from(tmp_dir.path())],
+            include_pattern: "".to_string(),
+            exclude_pattern: "(py$)|(txt$)".to_string(),
+            max_lines: 1,
+        })
+        .unwrap();
+        assert!(failing_files.len() == 0)
+    }
+    #[test]
+    fn test_bad_regex() {
+        let result = check_files(Args {
+            paths: vec![PathBuf::new()],
+            include_pattern: "\\".to_string(),
+            exclude_pattern: "".to_string(),
+            max_lines: 1,
+        });
+        assert!(result.is_err());
+        let result = check_files(Args {
+            paths: vec![PathBuf::new()],
+            include_pattern: "".to_string(),
+            exclude_pattern: "\\".to_string(),
+            max_lines: 1,
+        });
+        assert!(result.is_err());
+    }
+}

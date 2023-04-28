@@ -1,6 +1,6 @@
 [package]
 name = "tldr-line-verifier"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Command line tool to verify the max length of files in a repository."
 license = "MIT OR Apache-2.0"
@@ -11,3 +11,6 @@ license = "MIT OR Apache-2.0"
 clap = { version = "4.1.8", features = ["derive", "env"] }
 regex = "1.8.1"
 walkdir = "2.3.3"
+
+[dev-dependencies]
+tempdir = "0.3.7"

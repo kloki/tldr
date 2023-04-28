@@ -30,9 +30,16 @@ fn get_size(path: &PathBuf) -> usize {
     }
 }
 
-fn main() {
-    let args = Args::parse();
+fn red(message: &str) -> String {
+    format!("\x1b[0;31m{}\x1b[0m", message)
+}
 
+fn exit(message: String) {
+    println!("{}", red(&message));
+    std::process::exit(1)
+}
+
+fn check_files(args: Args) -> Result<Vec<(String, usize)>, Box<dyn std::error::Error>> {
     let mut files: Vec<PathBuf> = args
         .paths
         .iter()
@@ -46,36 +53,39 @@ fn main() {
         .collect::<Vec<_>>()
         .concat();
     if args.include_pattern != "" {
-        match Regex::new(&args.include_pattern) {
-            Ok(re) => files.retain(|e| re.is_match(e.to_str().unwrap())),
-            Err(e) => {
-                println!("\x1b[0;31m{}\x1b[0m", e);
-                std::process::exit(1)
-            }
-        };
+        let re = Regex::new(&args.include_pattern)?;
+        files.retain(|e| re.is_match(e.to_str().unwrap_or("")));
     }
     if args.exclude_pattern != "" {
-        match Regex::new(&args.exclude_pattern) {
-            Ok(re) => files.retain(|e| !re.is_match(e.to_str().unwrap())),
-            Err(e) => {
-                println!("\x1b[0;31m{}\x1b[0m", e);
-                std::process::exit(1)
-            }
-        };
+        let re = Regex::new(&args.exclude_pattern)?;
+        files.retain(|e| !re.is_match(e.to_str().unwrap_or("")));
     }
     let failing_files = files
         .iter()
-        .map(|p| (p, get_size(&p)))
+        .map(|p| (p.display().to_string(), get_size(&p)))
         .filter(|p| p.1 > args.max_lines)
         .collect::<Vec<_>>();
+    Ok(failing_files)
+}
 
-    if failing_files.len() != 0 {
-        let output = failing_files
-            .iter()
-            .map(|p| format!("\n {}:{}", p.0.display(), p.1))
-            .collect::<String>();
-        println!("\x1b[0;31mNo good!\x1b[0m 👮 🚨 {}", output);
-        std::process::exit(1);
+fn main() {
+    let args = Args::parse();
+    match check_files(args) {
+        Err(e) => exit(e.to_string()),
+        Ok(failing_files) => {
+            if failing_files.len() == 0 {
+                println!("All fine! 🎉");
+                return;
+            }
+            println!(
+                "{}{}",
+                red("No good! 👮 🚨 Some files are too long."),
+                failing_files
+                    .iter()
+                    .map(|p| format!("\n {}:{}", p.0, p.1))
+                    .collect::<String>()
+            );
+            std::process::exit(1)
+        }
     }
-    println!("All fine! 🎉")
 }

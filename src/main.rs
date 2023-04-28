@@ -54,11 +54,11 @@ fn check_files(args: Args) -> Result<Vec<(String, usize)>, Box<dyn std::error::E
         .concat();
     if args.include_pattern != "" {
         let re = Regex::new(&args.include_pattern)?;
-        files.retain(|e| re.is_match(e.to_str().unwrap_or("")));
+        files.retain(|e| re.is_match(&e.to_string_lossy()));
     }
     if args.exclude_pattern != "" {
         let re = Regex::new(&args.exclude_pattern)?;
-        files.retain(|e| !re.is_match(e.to_str().unwrap_or("")));
+        files.retain(|e| !re.is_match(&e.to_string_lossy()));
     }
     let failing_files = files
         .iter()

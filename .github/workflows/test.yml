@@ -11,5 +11,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: lintf
+        run: cargo-fmt --check
       - name: Run on itself
         run: cargo run ./

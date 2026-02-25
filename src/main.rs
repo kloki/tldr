@@ -7,7 +7,6 @@ use walkdir::WalkDir;
 /// Verify the files in a path don't exceed a max amount of lines
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-
 struct Args {
     /// Path to files to verify.
     #[arg(env = "TLDR_PATH")]
@@ -52,17 +51,17 @@ fn check_files(args: Args) -> Result<Vec<(String, usize)>, Box<dyn std::error::E
         })
         .collect::<Vec<_>>()
         .concat();
-    if args.include_pattern != "" {
+    if !args.include_pattern.is_empty() {
         let re = Regex::new(&args.include_pattern)?;
         files.retain(|e| re.is_match(&e.to_string_lossy()));
     }
-    if args.exclude_pattern != "" {
+    if !args.exclude_pattern.is_empty() {
         let re = Regex::new(&args.exclude_pattern)?;
         files.retain(|e| !re.is_match(&e.to_string_lossy()));
     }
     let failing_files = files
         .iter()
-        .map(|p| (p.display().to_string(), get_size(&p)))
+        .map(|p| (p.display().to_string(), get_size(p)))
         .filter(|p| p.1 > args.max_lines)
         .collect::<Vec<_>>();
     Ok(failing_files)
@@ -73,7 +72,7 @@ fn main() {
     match check_files(args) {
         Err(e) => exit(e.to_string()),
         Ok(failing_files) => {
-            if failing_files.len() == 0 {
+            if failing_files.is_empty() {
                 println!("All fine! 🎉");
                 return;
             }
@@ -95,11 +94,11 @@ mod tests {
     use super::*;
     use std::fs::File;
     use std::io::Write;
-    use tempdir::TempDir; // crate for test-only use. Cannot be used in non-test code.
+    use tempfile::TempDir;
 
     #[test]
     fn test_success() {
-        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let tmp_dir = TempDir::new().unwrap();
         let file_path_1 = tmp_dir.path().join("python.py");
         let mut tmp_file_1 = File::create(file_path_1).unwrap();
         writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
@@ -115,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_to_long() {
-        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let tmp_dir = TempDir::new().unwrap();
         let file_path_1 = tmp_dir.path().join("python.py");
         let mut tmp_file_1 = File::create(file_path_1).unwrap();
         writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
@@ -130,7 +129,7 @@ mod tests {
     }
     #[test]
     fn test_include_pattern() {
-        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let tmp_dir = TempDir::new().unwrap();
         let file_path_1 = tmp_dir.path().join("python.py");
         let mut tmp_file_1 = File::create(file_path_1).unwrap();
         writeln!(tmp_file_1, "1\n2\n3\n").unwrap();
@@ -148,7 +147,7 @@ mod tests {
     }
     #[test]
     fn test_exclude_pattern() {
-        let tmp_dir = TempDir::new("/tmp/testing").unwrap();
+        let tmp_dir = TempDir::new().unwrap();
         let file_path_1 = tmp_dir.path().join("python.py");
         let mut tmp_file_1 = File::create(file_path_1).unwrap();
         writeln!(tmp_file_1, "1\n2\n3\n").unwrap();

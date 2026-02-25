@@ -30,7 +30,7 @@ jobs:
   agent-context-check:
     runs-on: ubuntu-latest
     container:
-      image: nicekloki/tldr-line-verifier
+      image: nicekloki/tldr-line-verifier:latest
     steps:
       - uses: actions/checkout@v3
       - name: check agent context files

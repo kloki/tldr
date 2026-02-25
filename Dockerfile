@@ -1,4 +1,4 @@
-FROM rust:1.84 as builder
+FROM rust:1.85 AS builder
 WORKDIR /usr/src/tldr
 COPY . .
 RUN cargo install --path .

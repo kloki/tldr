@@ -2,11 +2,9 @@
 
 Command line tool to verify the max length of files in a repository. Supposed to be run in CI.
 
-## Install
+## Binaries
 
-```
-cargo install tldr-line-verifier
-```
+Check [Releases](https://github.com/kloki/tldr/releases) for binaries and installers
 
 ## Run
 
@@ -15,22 +13,26 @@ tldr-line-verifier ./ --max_lines=1000 --exclude_pattern=".csv$"
 
 ```
 
-# Docker
+# Enforce agent context file size
+
+AI coding agents use context files like `CLAUDE.md` and `AGENTS.md` to stay on track. When these files grow too large, agents lose focus and performance degrades. Use `tldr-line-verifier` to enforce a maximum size on these files:
 
 ```
-docker run -v /path/to/repository:/home nicekloki/tldr-line-verifier
+tldr-line-verifier ./ --max-lines=300 --include-pattern="(CLAUDE|AGENTS)\\.md$"
 ```
 
 # Github action
 
+To enforce agent context file size in CI:
+
 ```
 jobs:
-  tldr:
+  agent-context-check:
     runs-on: ubuntu-latest
     container:
       image: nicekloki/tldr-line-verifier
     steps:
       - uses: actions/checkout@v3
-      - name: check file length
-        run: tldr-line-verifier ./ --max-lines=1000
+      - name: check agent context files
+        run: tldr-line-verifier ./ --max-lines=300 --include-pattern="(CLAUDE|AGENTS)\\.md$"
 ```
